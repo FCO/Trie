@@ -34,4 +34,11 @@ my @path = $t1.get-path: "test";
 is @path.elems, 5;
 is @path, [$t1, $t1.get-node("t"), $t1.get-node("te"), $t1.get-node("tes"), $t1.get-node("test")];
 
+$t1.delete: "ble";
+is $t1.all, [1, 3, 4, "test"];
+
+$t1.insert: "blah";
+$t1.delete: "bla";
+is $t1.all, ["blah", 3, 4, "test"];
+
 done-testing

@@ -1,6 +1,7 @@
 use X::Trie::MultipleValues;
 unit class Trie;
-has ::?CLASS    %!children;
+trusts Trie;
+has ::?CLASS    %.children;
 has             $.value     = Nil;
 
 multi method insert([], $data) {
@@ -29,27 +30,40 @@ method single {
 }
 
 method all {
-    [
-        |($_ with $!value),
-        |%!children.pairs.sort(*.key).hyper(:1batch).map: *.value.all
-    ]
+    gather {
+        self!all
+    }
+}
+
+method !all {
+    .take with $!value;
+    %!children.pairs.sort(*.key)>>.value>>!all
 }
 
 method children { %!children.elems }
 
-#method delete-path(@path) {
-#    for @path.reverse -> $node {
-#        if $node.children + ($node.value.DEFINITE ?? 1 !! 0) > 1 {
-#
-#        }
-#    }
-#}
-#
-#method delete(@chars) {
-#    self.delete-path: self.get-path: @chars
-#}
-#
-#method delete(Str() $key) { self.delete: $key.comb }
+method !children-and-value { %!children.elems + ($!value.DEFINITE ?? 1 !! 0) }
+
+multi method delete(@arr) { self.del(@arr, :root) }
+
+multi method delete(Str() $key) { self.delete: $key.comb }
+
+multi method del([], :$root) {
+    $!value = Nil;
+    not %!children.elems
+}
+
+multi method del([$first, *@arr], Bool :$root) {
+    my Bool $del = %!children{$first}.del: @arr;
+    do if $root or self!children-and-value > 1 {
+        if $del {
+            %!children{$first}:delete
+        }
+        False
+    } else {
+        $del
+    }
+}
 
 multi method get-path([]) { [ self ] }
 

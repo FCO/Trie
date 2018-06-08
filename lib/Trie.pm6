@@ -1,8 +1,26 @@
 use X::Trie::MultipleValues;
-unit class Trie;
+unit class Trie does Associative;
 trusts Trie;
 has ::?CLASS    %.children;
 has             $.value     = Nil;
+
+method AT-KEY(::?CLASS:D: $key) {
+    self.get-all: $key
+}
+
+method EXISTS-KEY(::?CLASS:D: $key) {
+    ?self.get-node: $key
+}
+
+method DELETE-KEY(::?CLASS:D: $key) {
+    my \value = self{$key};
+    self.delete: $key;
+    value
+}
+
+method ASSIGN-KEY(::?CLASS:D: $key, $value) {
+    self.insert: $key, $value
+}
 
 multi method insert([], $data) {
     die "Value already set" with $!value;
@@ -36,6 +54,7 @@ method all {
 }
 
 method !all {
+    return unless self.DEFINITE;
     .take with $!value;
     %!children.pairs.sort(*.key)>>.value>>!all
 }
@@ -49,6 +68,7 @@ multi method delete(@arr) { self.del(@arr, :root) }
 multi method delete(Str() $key) { self.delete: $key.comb }
 
 multi method del([], :$root) {
+    return unless self.DEFINITE;
     $!value = Nil;
     not %!children.elems
 }

@@ -1,17 +1,35 @@
 NAME
 ====
 
-Trie - blah blah blah
+Trie - A pure perl6 implementation of the trie data structure.
 
 SYNOPSIS
 ========
 
     use Trie;
+    my Trie $t .= new;
+    
+    $t.insert: $_ for <ability able about above accept according account>;
+    $t.insert: "agent", {complex => "data"};
+    
+    say $t.get-all:    "ab";     # (ability able about)
+    say $t.get-all:    "abov";   # (above)
+    say $t.get-single: "abov";   # "above"
+    #   $t.get-single: "ab";     # dies
+    
+    say $t.get-single: "agent";  # {complex => "data"}
+    
+    $t<all>   = 1;
+    $t<allow> = 2;
+    say $t<all>;                 # (1 2)
+    
+    say $t.find-substring: "cc"; # (accept according account)
+    say $t.find-fuzzy:     "ao"; # (about above according account 2)
 
 DESCRIPTION
 ===========
 
-Trie is ...
+Trie is a pure perl6 implementation of the trie data structure.
 
 AUTHOR
 ======

@@ -41,4 +41,20 @@ $t1.insert: "blah";
 $t1.delete: "bla";
 is $t1.all, ["blah", 3, 4, "test"];
 
+is $t1<bla>, $t1.get-all: "bla";
+for <b bl bla bli blah t te test none> -> \key {
+    ok $t1{key}:exists, "{key} exists?";
+    is $t1{key}, $t1.get-all: key;
+}
+
+for <c cl cla ble> -> \key {
+    ok $t1{key}:!exists, "{key} doesn't exists?";
+    is $t1{key}, $t1.get-all: key;
+}
+
+is $t1<bla>:k, "bla";
+is $t1<bla>:v, $t1.get-all: "bla";
+is $t1<bla>:kv, ("bla", $t1.get-all: "bla");
+is $t1<bla>:p, "bla" => $t1.get-all: "bla";
+
 done-testing

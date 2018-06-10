@@ -57,4 +57,16 @@ is $t1<bla>:v, $t1.get-all: "bla";
 is $t1<bla>:kv, ("bla", $t1.get-all: "bla");
 is $t1<bla>:p, "bla" => $t1.get-all: "bla";
 
+my $babaca    = $t1.insert: "babaca";
+my $cacau     = $t1.insert: "cacau";
+my $abacaxi   = $t1.insert: "abacaxi";
+my $abacate   = $t1.insert: "ababacate";
+my $abocanhar = $t1.insert: "abocanhar";
+my $babao     = $t1.insert: "babao";
+
+is $t1.find-char("a").elems, 13;
+is $t1.find-substring("bac"), <abacaxi ababacate babaca>;
+
+is $t1.find-fuzzy("bct"), <ababacate ababacate>;
+
 done-testing

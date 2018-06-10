@@ -109,5 +109,21 @@ multi method get-node(Str $string) {
     self.get-node: $string.comb
 }
 
-method get-single(\key) { self.get-node(key).single }
-method get-all(\key) { self.get-node(key).all }
+method get-single(\key)  { self.get-node(key).single }
+method get-all(\key)     { self.get-node(key).all }
+
+method find-char(\char)  { gather { self!find-char(char) } }
+method !find-char(\char) { .take with %!children{char}; %!children.pairs.sort(*.key)>>.value>>!find-char(char) }
+
+multi method find-substring($string) { self.find-substring: $string.comb }
+multi method find-substring([$first, *@rest]) {
+    self.find-char($first)>>.get-all(@rest).flat
+}
+
+multi method find-fuzzy($string) { self.find-fuzzy: $string.comb }
+multi method find-fuzzy([$first]) {
+    self.find-char($first)>>.all.flat
+}
+multi method find-fuzzy([$first, *@rest]) {
+    self.find-char($first)>>.find-fuzzy(@rest).flat
+}

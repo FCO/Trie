@@ -4,18 +4,26 @@ use Test;
 my Trie $t1 .= new;
 isa-ok $t1, Trie;
 
+is $t1.elems, 0;
+
 my $node = $t1.insert: "bla", 1;
 isa-ok $node, Trie;
+
+is $t1.elems, 1;
 
 is $t1.get-node("bla"), $node;
 is $t1.get-node("none"), Trie;
 is $node.value, 1;
+
+is $t1.elems, 1;
 
 is $t1.single, 1;
 is $t1.all, [1];
 
 $t1.insert: "none", 4;
 throws-like { $t1.single }, X::Trie::MultipleValues;
+
+is $t1.elems, 2;
 
 is $t1.all, [1, 4];
 
@@ -68,5 +76,18 @@ is $t1.find-char("a").elems, 13;
 is $t1.find-substring("bac"), <abacaxi ababacate babaca>;
 
 is $t1.find-fuzzy("bct"), <ababacate ababacate>;
+
+is $t1.elems, 12;
+
+is $t1[0], "ababacate";
+is $t1[1], "abacaxi";
+is $t1[*-1], "test";
+is $t1[999], Any;
+
+ok $t1[0]:exists;
+ok $t1[1]:exists;
+ok $t1[11]:exists;
+ok $t1[12]:!exists;
+ok $t1[13]:!exists;
 
 done-testing

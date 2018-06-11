@@ -1,8 +1,11 @@
 use X::Trie::MultipleValues;
-unit class Trie does Associative;
+unit class Trie does Associative does Positional;
 trusts Trie;
 has ::?CLASS    %.children;
 has             $.value     = Nil;
+has UInt        $.elems     = 0;
+
+method of { Any }
 
 method AT-KEY(::?CLASS:D: $key) {
     self.get-all: $key
@@ -22,14 +25,37 @@ method ASSIGN-KEY(::?CLASS:D: $key, $value) {
     self.insert: $key, $value
 }
 
+method AT-POS(::?CLASS:D: $index is copy) {
+    return Any if $index >= $!elems;
+    my @keys = %!children.keys.sort;
+    my $key = @keys.shift;
+    return $!value // %!children{$key}.AT-POS: 0 if $index ~~ 0;
+    --$index with $!value;
+    repeat {
+        if $index >= %!children{$key}.elems {
+            $index -= %!children{$key}.elems
+        } else {
+            return %!children{$key}.AT-POS: $index
+        }
+        $key = @keys.shift;
+    } while $index >= 0;
+}
+
+method EXISTS-POS(::?CLASS:D: $index) { $index ~~ ^$!elems }
+
 multi method insert([], $data) {
     die "Value already set" with $!value;
     $!value = $data;
+    $!elems = 1;
     self
 }
 
 multi method insert([$first, *@arr], $data) {
-    (%!children{$first} //= ::?CLASS.new).insert: @arr, $data
+    my $child = %!children{$first} //= ::?CLASS.new;
+    my $child-elems = $child.elems;
+    my $gchild = $child.insert: @arr, $data;
+    $!elems++ if $child-elems !~~ $child.elems;
+    $gchild
 }
 
 multi method insert(Str $string, $data = $string) {

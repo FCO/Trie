@@ -2,7 +2,7 @@ use X::Trie::MultipleValues;
 use OrderedHash;
 unit class Trie does Associative does Positional;
 trusts Trie;
-has             $.children  = OrderedHash[Trie].new;
+has             $!children  = OrderedHash[Trie].new;
 has             $.value     = Nil;
 has UInt        $.elems     = 0;
 

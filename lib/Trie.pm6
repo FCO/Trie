@@ -51,10 +51,10 @@ multi method insert([], $data) {
 }
 
 multi method insert([$first, *@arr], $data) {
-    my $child = $!children{$first};
-    $child = $!children{$first} = ::?CLASS.new without $child;
+    my $child       = $!children{$first};
+    $child          = $!children{$first} = ::?CLASS.new without $child;
     my $child-elems = $child.elems;
-    my $gchild = $child.insert: @arr, $data;
+    my $gchild      = $child.insert: @arr, $data;
     $!elems++ if $child-elems !~~ $child.elems;
     $gchild
 }

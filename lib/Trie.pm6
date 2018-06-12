@@ -1,7 +1,8 @@
 use X::Trie::MultipleValues;
+use OrderedHash;
 unit class Trie does Associative does Positional;
 trusts Trie;
-has ::?CLASS    %.children;
+has             $.children  = OrderedHash[Trie].new;
 has             $.value     = Nil;
 has UInt        $.elems     = 0;
 
@@ -27,17 +28,16 @@ method ASSIGN-KEY(::?CLASS:D: $key, $value) {
 
 method AT-POS(::?CLASS:D: $index is copy) {
     return Any if $index >= $!elems;
-    my @keys = %!children.keys.sort;
-    my $key = @keys.shift;
-    return $!value // %!children{$key}.AT-POS: 0 if $index ~~ 0;
+    my @keys = $!children.keys;
+    return $!value.clone // $!children{@keys.head}.AT-POS: 0 if $index ~~ 0;
     --$index with $!value;
     repeat {
-        if $index >= %!children{$key}.elems {
-            $index -= %!children{$key}.elems
+        my $key = @keys.shift;
+        if $index >= $!children{$key}.elems {
+            $index -= $!children{$key}.elems
         } else {
-            return %!children{$key}.AT-POS: $index
+            return $!children{$key}.AT-POS: $index
         }
-        $key = @keys.shift;
     } while $index >= 0;
 }
 
@@ -51,7 +51,8 @@ multi method insert([], $data) {
 }
 
 multi method insert([$first, *@arr], $data) {
-    my $child = %!children{$first} //= ::?CLASS.new;
+    my $child = $!children{$first};
+    $child = $!children{$first} = ::?CLASS.new without $child;
     my $child-elems = $child.elems;
     my $gchild = $child.insert: @arr, $data;
     $!elems++ if $child-elems !~~ $child.elems;
@@ -64,12 +65,12 @@ multi method insert(Str $string, $data = $string) {
 
 method single {
     do with $!value {
-        X::Trie::MultipleValues.new.throw if %!children.elems;
+        X::Trie::MultipleValues.new.throw if $!children.elems;
         $!value
-    } elsif %!children.elems > 1 {
-        X::Trie::MultipleValues.new.throw if %!children.elems;
-    } elsif %!children.elems == 1 {
-        %!children.values.first.single
+    } elsif $!children.elems > 1 {
+        X::Trie::MultipleValues.new.throw if $!children.elems;
+    } elsif $!children.elems == 1 {
+        $!children.values.first.single
     }
 }
 
@@ -82,12 +83,12 @@ method all {
 method !all {
     return unless self.DEFINITE;
     .take with $!value;
-    %!children.pairs.sort(*.key)>>.value>>!all
+    $!children.values>>!all
 }
 
-method children { %!children.elems }
+method children { $!children.elems }
 
-method !children-and-value { %!children.elems + ($!value.DEFINITE ?? 1 !! 0) }
+method !children-and-value { $!children.elems + ($!value.DEFINITE ?? 1 !! 0) }
 
 multi method delete(@arr) { self.del(@arr, :root) }
 
@@ -96,14 +97,14 @@ multi method delete(Str() $key) { self.delete: $key.comb }
 multi method del([], :$root) {
     return unless self.DEFINITE;
     $!value = Nil;
-    not %!children.elems
+    not $!children.elems
 }
 
 multi method del([$first, *@arr], Bool :$root) {
-    my Bool $del = %!children{$first}.del: @arr;
+    my Bool $del = $!children{$first}.del: @arr;
     do if $root or self!children-and-value > 1 {
         if $del {
-            %!children{$first}:delete
+            $!children{$first}:delete
         }
         False
     } else {
@@ -114,8 +115,8 @@ multi method del([$first, *@arr], Bool :$root) {
 multi method get-path([]) { [ self ] }
 
 multi method get-path([$first, *@arr]) {
-    return Trie unless %!children{$first}:exists;
-    [ self, |%!children{$first}.get-path: @arr ]
+    return Trie unless $!children{$first}:exists;
+    [ self, |$!children{$first}.get-path: @arr ]
 }
 
 multi method get-path(Str $string) {
@@ -127,8 +128,8 @@ multi method get-node { self }
 multi method get-node([]) { self.get-node }
 
 multi method get-node([$first, *@arr]) {
-    return Trie unless %!children{$first}:exists;
-    %!children{$first}.get-node: @arr
+    return Trie unless $!children{$first}:exists;
+    $!children{$first}.get-node: @arr
 }
 
 multi method get-node(Str $string) {
@@ -139,7 +140,7 @@ method get-single(\key)  { self.get-node(key).single }
 method get-all(\key)     { self.get-node(key).all }
 
 method find-char(\char)  { gather { self!find-char(char) } }
-method !find-char(\char) { .take with %!children{char}; %!children.pairs.sort(*.key)>>.value>>!find-char(char) }
+method !find-char(\char) { .take with $!children{char}; $!children.values>>!find-char(char) }
 
 multi method find-substring($string) { self.find-substring: $string.comb }
 multi method find-substring([$first, *@rest]) {

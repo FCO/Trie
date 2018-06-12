@@ -3,7 +3,9 @@
     "Fernando Correa de Oliveira"
   ],
   "build-depends" : [ ],
-  "depends" : [ ],
+  "depends" : [
+      "OrderedHash"
+  ],
   "description" : "A Trie implementation",
   "license" : "Artistic-2.0",
   "name" : "Trie",

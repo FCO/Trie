@@ -24,6 +24,9 @@ $t<all>   = 1;
 $t<allow> = 2;
 say $t<all>;                 # (1 2)
 
+say $t[0];                   # ability
+say $t[0 .. 3];              # (ability able about above)
+
 say $t.find-substring: "cc"; # (accept according account)
 say $t.find-fuzzy:     "ao"; # (about above according account 2)
 ```

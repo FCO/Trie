@@ -42,11 +42,15 @@ my @path = $t1.get-path: "test";
 is @path.elems, 5;
 is @path, [$t1, $t1.get-node("t"), $t1.get-node("te"), $t1.get-node("tes"), $t1.get-node("test")];
 
+is $t1.elems, 5;
 $t1.delete: "ble";
+is $t1.elems, 4;
 is $t1.all, [1, 3, 4, "test"];
 
 $t1.insert: "blah";
+is $t1.elems, 5;
 $t1.delete: "bla";
+is $t1.elems, 4;
 is $t1.all, ["blah", 3, 4, "test"];
 
 is $t1<bla>, $t1.get-all: "bla";
@@ -73,11 +77,11 @@ my $abocanhar = $t1.insert: "abocanhar";
 my $babao     = $t1.insert: "babao";
 
 is $t1.find-char("a").elems, 13;
-is $t1.find-substring("bac"), <abacaxi ababacate babaca>;
+is $t1.find-substring("bac").sort, <ababacate abacaxi babaca>;
 
-is $t1.find-fuzzy("bct"), <ababacate ababacate>;
+is $t1.find-fuzzy("bct"), set < ababacate >;
 
-is $t1.elems, 12;
+is $t1.elems, 10;
 
 is $t1[0], "ababacate";
 is $t1[1], "abacaxi";
@@ -86,8 +90,8 @@ is $t1[999], Any;
 
 ok $t1[0]:exists;
 ok $t1[1]:exists;
-ok $t1[11]:exists;
-ok $t1[12]:!exists;
-ok $t1[13]:!exists;
+ok $t1[9]:exists;
+ok $t1[10]:!exists;
+ok $t1[11]:!exists;
 
 done-testing

@@ -2,11 +2,17 @@ use X::Trie::MultipleValues;
 use OrderedHash;
 unit class Trie does Associative does Positional;
 trusts Trie;
-has             $!children  = OrderedHash[Trie].new;
-has             $.value     = Nil;
-has UInt        $.elems     = 0;
+has             $!children   = OrderedHash[Trie].new;
+has             %!decendents;
+has             $.value      = Nil;
+has atomicint   $.elems      = 0;
 
 method of { Any }
+
+method Hash(--> Hash()) {
+    (:__value__($_) with $!value),
+    |$!children.kv.map: -> $key, $val { $key => $val.Hash }
+}
 
 method AT-KEY(::?CLASS:D: $key) {
     self.get-all: $key
@@ -46,21 +52,24 @@ method EXISTS-POS(::?CLASS:D: $index) { $index ~~ ^$!elems }
 multi method insert([], $data) {
     die "Value already set" with $!value;
     $!value = $data;
-    $!elems = 1;
+    $!elems⚛++;
     self
 }
 
-multi method insert([$first, *@arr], $data) {
+multi method insert(@chars [$first, *@arr], $data) {
     my $child       = $!children{$first};
     $child          = $!children{$first} = ::?CLASS.new without $child;
     my $child-elems = $child.elems;
-    my $gchild      = $child.insert: @arr, $data;
-    $!elems++ if $child-elems !~~ $child.elems;
-    $gchild
+    my @gchild      = $child.insert: @arr, $data;
+    $!elems⚛++ if $child-elems !~~ $child.elems;
+    for @chars.kv -> \i, \char {
+        %!decendents{char} ∪= [$child, |@gchild].[i]
+    }
+    $child, |@gchild
 }
 
 multi method insert(Str $string, $data = $string) {
-    self.insert: $string.comb, $data
+    self.insert($string.comb, $data).tail
 }
 
 method single {
@@ -96,12 +105,15 @@ multi method delete(Str() $key) { self.delete: $key.comb }
 
 multi method del([], :$root) {
     return unless self.DEFINITE;
+    $!elems⚛--;
     $!value = Nil;
     not $!children.elems
 }
 
 multi method del([$first, *@arr], Bool :$root) {
+    my $elems = $!children{$first}.elems;
     my Bool $del = $!children{$first}.del: @arr;
+    $!elems⚛-- if $elems > $!children{$first}.elems;
     do if $root or self!children-and-value > 1 {
         if $del {
             $!children{$first}:delete
@@ -140,14 +152,19 @@ method get-single(\key)  { self.get-node(key).single }
 method get-all(\key)     { self.get-node(key).all }
 
 method find-char(\char)  { gather { self!find-char(char) } }
-method !find-char(\char) { .take with $!children{char}; $!children.values>>!find-char(char) }
+method !find-char(\char) {
+    #.take with $!children{char}; $!children.values>>!find-char(char)
+    for %!decendents{char}.grep: { .DEFINITE } -> %set {
+        .take for %set.keys
+    }
+}
 
 multi method find-substring($string) { self.find-substring: $string.comb }
 multi method find-substring([$first, *@rest]) {
     self.find-char($first)>>.get-all(@rest).flat
 }
 
-multi method find-fuzzy($string) { self.find-fuzzy: $string.comb }
+multi method find-fuzzy($string --> Set()) { self.find-fuzzy: $string.comb }
 multi method find-fuzzy([$first]) {
     self.find-char($first)>>.all.flat
 }

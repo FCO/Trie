@@ -13,7 +13,7 @@ my Trie $t .= new;
 $t.insert: $_ for <ability able about above accept according account>;
 $t.insert: "agent", {complex => "data"};
 
-say $t.get-all:    "ab";     # (ability able about)
+say $t.get-all:    "ab";     # (ability able about above)
 say $t.get-all:    "abov";   # (above)
 say $t.get-single: "abov";   # "above"
 #   $t.get-single: "ab";     # dies
@@ -28,7 +28,7 @@ say $t[0];                   # ability
 say $t[0 .. 3];              # (ability able about above)
 
 say $t.find-substring: "cc"; # (accept according account)
-say $t.find-fuzzy:     "ao"; # (about above according account 2)
+say $t.find-fuzzy:     "ao"; # set(2 about above according account)
 ```
 
 DESCRIPTION

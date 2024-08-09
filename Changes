@@ -1,5 +1,7 @@
 Revision history for Trie
 
 {{$NEXT}}
+
+0.0.1  2024-08-09T03:13:37+01:00
     - Initial version
     - Move to fez

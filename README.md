@@ -1,14 +1,14 @@
 [![Build Status](https://travis-ci.org/FCO/Trie.svg?branch=master)](https://travis-ci.org/FCO/Trie)
 
-NAME
+Trie
 ====
 
-Trie - A pure perl6 implementation of the trie data structure.
+A pure perl6 implementation of the trie data structure.
 
 SYNOPSIS
-========
+--------
 
-```perl6
+```raku
 use Trie;
 my Trie $t .= new;
 
@@ -34,17 +34,17 @@ say $t.find-fuzzy:     "ao"; # set(2 about above according account)
 ```
 
 DESCRIPTION
-===========
+-----------
 
 Trie is a pure perl6 implementation of the trie data structure.
 
 AUTHOR
-======
+------
 
 Fernando Correa de Oliveira <fernandocorrea@gmail.com>
 
 COPYRIGHT AND LICENSE
-=====================
+---------------------
 
 Copyright 2018 Fernando Correa de Oliveira
 

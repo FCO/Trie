@@ -171,3 +171,53 @@ multi method find-fuzzy([$first]) {
 multi method find-fuzzy([$first, *@rest]) {
     self.find-char($first)>>.find-fuzzy(@rest).flat
 }
+
+=begin pod
+
+=head1 Trie
+
+A pure perl6 implementation of the trie data structure.
+
+=head2 SYNOPSIS
+
+=begin code :lang<raku>
+use Trie;
+my Trie $t .= new;
+
+$t.insert: $_ for <ability able about above accept according account>;
+$t.insert: "agent", {complex => "data"};
+
+say $t.get-all:    "ab";     # (ability able about above)
+say $t.get-all:    "abov";   # (above)
+say $t.get-single: "abov";   # "above"
+#   $t.get-single: "ab";     # dies
+
+say $t.get-single: "agent";  # {complex => "data"}
+
+$t<all>   = 1;
+$t<allow> = 2;
+say $t<all>;                 # (1 2)
+
+say $t[0];                   # ability
+say $t[0 .. 3];              # (ability able about above)
+
+say $t.find-substring: "cc"; # (accept according account)
+say $t.find-fuzzy:     "ao"; # set(2 about above according account)
+
+=end code
+
+=head2 DESCRIPTION
+
+Trie is a pure perl6 implementation of the trie data structure.
+
+=head2 AUTHOR
+
+Fernando Correa de Oliveira <fernandocorrea@gmail.com>
+
+=head2 COPYRIGHT AND LICENSE
+
+Copyright 2018 Fernando Correa de Oliveira
+
+This library is free software; you can redistribute it and/or modify it under the Artistic License 2.0.
+
+=end pod
